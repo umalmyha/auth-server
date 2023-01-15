@@ -5,12 +5,12 @@ import (
 )
 
 type CustomClaims struct {
-	KID    string   `json:"kid"`
 	Email  string   `json:"email,omitempty"`
 	Scopes []string `json:"scopes,omitempty"`
 }
 
 type Claims struct {
+	KID string `json:"kid"`
 	CustomClaims
 	jwt.RegisteredClaims
 }

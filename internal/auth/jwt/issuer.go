@@ -1,7 +1,6 @@
 package jwt
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
 	"errors"
 	"fmt"
@@ -13,15 +12,19 @@ import (
 
 const DefaultTimeToLive = 10 * time.Minute
 
+var DefaultKeyDeterminationFunc = func(pairs []KeyPair) (kp KeyPair) {
+	return pairs[0]
+}
+
+type KeyDeterminationFunc func([]KeyPair) KeyPair
+
 type issuerConfigFunc func(cfg *issuerConfig)
 
 type issuerConfig struct {
 	issuer     string
 	timeToLive time.Duration
-	kidSelFn KIDSelectionFunc
+	keyFunc    KeyDeterminationFunc
 }
-
-type KIDSelectionFunc func(keys map[string]*rsa.PrivateKey) (kid string)
 
 type KeyPair struct {
 	KID        string
@@ -47,10 +50,10 @@ func WithTimeToLive(ttl time.Duration) issuerConfigFunc {
 	}
 }
 
-func WithSigningKeySelectionFunc(kidSelFn KIDSelectionFunc) issuerConfigFunc {
+func WithSigningKeySelectionFunc(keyFunc KeyDeterminationFunc) issuerConfigFunc {
 	return func(cfg *issuerConfig) {
-		if kidSelFn != nil {
-			cfg.kidSelFn = kidSelFn
+		if keyFunc != nil {
+			cfg.keyFunc = keyFunc
 		}
 	}
 }
@@ -59,51 +62,44 @@ type Issuer struct {
 	issuer     string
 	method     jwt.SigningMethod
 	timeToLive time.Duration
-	keys       []KeyPair
-	kidSelFn func() string
+	keyPairs   []KeyPair
+	keyFunc    KeyDeterminationFunc
 }
 
 func NewIssuer(keyPairs []KeyPair, configs ...issuerConfigFunc) (*Issuer, error) {
 	if len(keyPairs) == 0 {
-		return nil, fmt.Errorf("there must be at least one private key provided")
+		return nil, fmt.Errorf("there must be at least one key pair provided")
 	}
 
 	cfg := &issuerConfig{
 		timeToLive: DefaultTimeToLive,
-		kidSelFn: defaultKIDSelectionFunc,
+		keyFunc:    DefaultKeyDeterminationFunc,
 	}
 
 	for _, cfgFn := range configs {
 		cfgFn(cfg)
 	}
 
-	privateKeys := make(map[string]*rsa.PrivateKey)
-	for _, pair := range keyPairs {
-		privateKeys[pair.KID] = pair.PrivateKey
-	}
-
-	kidSelFn := func() string {
-		return cfg.kidSelFn(privateKeys)
-	}
-
 	return &Issuer{
 		issuer:     cfg.issuer,
 		method:     jwt.SigningMethodRS256,
 		timeToLive: cfg.timeToLive,
-		keys:       keyPairs,
-		kidSelFn: kidSelFn,
+		keyPairs:   keyPairs,
+		keyFunc:    cfg.keyFunc,
 	}, nil
 }
 
-func (iss *Issuer) Sign(sc SignClaims, issueAt time.Time) error {
-	kid := iss.kidSelFn()
-	iss.
+func (iss *Issuer) Sign(sc SignClaims, issueAt time.Time) (string, error) {
+	kp := iss.keyFunc(iss.keyPairs)
+	if kp.KID == "" {
+		return "", errors.New("failed to determine kid with provided key determination func")
+	}
 
 	expiresAt := issueAt.Add(iss.timeToLive)
 
-	claims := &Claims{
+	claims := Claims{
+		KID: kp.KID,
 		CustomClaims: CustomClaims{
-			KID:
 			Email:  sc.Email,
 			Scopes: sc.Scopes,
 		},
@@ -117,14 +113,22 @@ func (iss *Issuer) Sign(sc SignClaims, issueAt time.Time) error {
 		},
 	}
 
-	token := jwt.NewWithClaims(iss.method, claims)
+	token, err := jwt.NewWithClaims(iss.method, claims).SignedString(kp.PrivateKey)
+	if err != nil {
+		return "", err
+	}
 
-	token.SignedString()
+	return token, nil
 }
 
-func defaultKIDSelectionFunc(keys map[string]*rsa.PrivateKey) (kid string) {
-	for kid = range keys {
-		break
+func (iss *Issuer) Validator() *Validator {
+	keys := make(map[string]*rsa.PublicKey)
+	for _, kp := range iss.keyPairs {
+		keys[kp.KID] = kp.PublicKey
 	}
-	return kid
+
+	return &Validator{
+		method: iss.method,
+		keys:   keys,
+	}
 }

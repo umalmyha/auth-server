@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/umalmyha/auth-server/proto";
+
+service AuthService {
+  rpc SignUp(SignUpRequest) returns (SignUpResponse);
+  rpc SignIn(SignInRequest) returns (SignInResponse);
+  rpc Refresh(RefreshRequest) returns (RefreshResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+}
+
+message SignInRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message SignInResponse {}
+
+message SignUpRequest {}
+
+message SignUpResponse {}
+
+message RefreshRequest {}
+
+message RefreshResponse {}
+
+message LogoutRequest {}
+
+message LogoutResponse {}
