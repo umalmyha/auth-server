@@ -11,21 +11,36 @@ service AuthService {
   rpc Logout(LogoutRequest) returns (LogoutResponse);
 }
 
-message SignInRequest {
+message SignUpRequest {
   string email = 1;
   string password = 2;
 }
 
-message SignInResponse {}
-
-message SignUpRequest {}
-
 message SignUpResponse {}
 
-message RefreshRequest {}
+message SignInRequest {
+  string email = 1;
+  string password = 2;
+  string fingerprint = 3;
+}
 
-message RefreshResponse {}
+message SignInResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
 
-message LogoutRequest {}
+message RefreshRequest {
+  string token_id = 1;
+  string fingerprint = 2;
+}
+
+message RefreshResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message LogoutRequest {
+  string token_id = 1;
+}
 
 message LogoutResponse {}
