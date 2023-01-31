@@ -5,42 +5,42 @@ package proto;
 option go_package = "github.com/umalmyha/auth-server/proto";
 
 service AuthService {
-  rpc SignUp(SignUpRequest) returns (SignUpResponse);
-  rpc SignIn(SignInRequest) returns (SignInResponse);
-  rpc Refresh(RefreshRequest) returns (RefreshResponse);
-  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
+  rpc LoginUser(LoginUserRequest) returns (LoginUserResponse);
+  rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse);
+  rpc LogoutUser(LogoutUserRequest) returns (LogoutUserResponse);
 }
 
-message SignUpRequest {
+message RegisterUserRequest {
   string email = 1;
   string password = 2;
 }
 
-message SignUpResponse {}
+message RegisterUserResponse {}
 
-message SignInRequest {
+message LoginUserRequest {
   string email = 1;
   string password = 2;
   string fingerprint = 3;
 }
 
-message SignInResponse {
+message LoginUserResponse {
   string access_token = 1;
   string refresh_token = 2;
 }
 
-message RefreshRequest {
+message RefreshSessionRequest {
   string token_id = 1;
   string fingerprint = 2;
 }
 
-message RefreshResponse {
+message RefreshSessionResponse {
   string access_token = 1;
   string refresh_token = 2;
 }
 
-message LogoutRequest {
+message LogoutUserRequest {
   string token_id = 1;
 }
 
-message LogoutResponse {}
+message LogoutUserResponse {}

@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+
 	pb "github.com/umalmyha/auth-server/proto"
 )
 

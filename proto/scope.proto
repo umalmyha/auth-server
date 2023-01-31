@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/umalmyha/auth-server/proto";
+
+service ScopeService {
+  rpc CreateScope(CreateScopeRequest) returns (CreateScopeResponse);
+  rpc DeleteScope(DeleteScopeRequest) returns (DeleteScopeResponse);
+}
+
+message CreateScopeRequest {
+  string name = 1;
+}
+
+message CreateScopeResponse {}
+
+message DeleteScopeRequest {
+  string name = 1;
+}
+
+message DeleteScopeResponse {}

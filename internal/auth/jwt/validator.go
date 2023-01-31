@@ -1,12 +1,10 @@
 package jwt
 
 import (
-	"crypto"
 	"crypto/rsa"
+
 	"github.com/golang-jwt/jwt/v4"
 )
-
-type PublicKeyDeterminationFunc func(keys map[string]crypto.PublicKey) string
 
 type Validator struct {
 	method jwt.SigningMethod
