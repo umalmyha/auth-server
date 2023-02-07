@@ -1,0 +1,6 @@
+version: '3'
+
+tasks:
+  protoc:
+    cmds:
+      - protoc -Iproto --go_out=./proto --go-grpc_out=./proto --go_opt=module=github.com/umalmyha/auth-server/proto --go-grpc_opt=module=github.com/umalmyha/auth-server/proto ./proto/*.proto

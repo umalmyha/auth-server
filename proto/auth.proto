@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/umalmyha/auth-server/proto";
+
+service AuthService {
+  rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
+  rpc LoginUser(LoginUserRequest) returns (LoginUserResponse);
+  rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse);
+  rpc LogoutUser(LogoutUserRequest) returns (LogoutUserResponse);
+}
+
+message RegisterUserRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message RegisterUserResponse {}
+
+message LoginUserRequest {
+  string email = 1;
+  string password = 2;
+  string fingerprint = 3;
+}
+
+message LoginUserResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message RefreshSessionRequest {
+  string token_id = 1;
+  string fingerprint = 2;
+}
+
+message RefreshSessionResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message LogoutUserRequest {
+  string token_id = 1;
+}
+
+message LogoutUserResponse {}
